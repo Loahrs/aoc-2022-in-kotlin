@@ -8,6 +8,7 @@ import java.security.MessageDigest
 fun readInput(name: String) = File("src", "$name.txt")
     .readLines()
 
+fun readInputAsString(name : String) = File("src", "$name.txt").readText().trimIndent()
 /**
  * Converts string to md5 hash.
  */
