@@ -12,7 +12,14 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        return input.asSequence().map {
+            val (opponentMove, desiredOutcomeHint) = it.split(" ")
+            val opponentShape = getShape(opponentMove)
+
+            val desiredOutcome = desiredOutcome(desiredOutcomeHint)
+
+            return@map desiredOutcome.points + requiredShapeForOutcome(opponentShape, desiredOutcome).points
+        }.sum()
     }
 
     // test if implementation meets criteria from the description, like:
@@ -33,6 +40,23 @@ fun getShape(input : String) : Shape {
     }
 }
 
+fun requiredShapeForOutcome(opponentShape: Shape, desiredOutcome: Outcome): Shape {
+    return when(desiredOutcome) {
+        Outcome.WIN -> Shape.values().find { it beats opponentShape }!!
+        Outcome.LOSS -> Shape.values().find { opponentShape beats it }!!
+        Outcome.DRAW -> opponentShape
+    }
+}
+
+fun desiredOutcome(input : String) : Outcome {
+    return when(input) {
+        "X" -> Outcome.LOSS
+        "Y" -> Outcome.DRAW
+        "Z" -> Outcome.WIN
+        else -> throw Exception("Illegal Symbol")
+    }
+}
+
 fun calculateOutcome(opponentShape : Shape, playerShape : Shape) : Outcome {
     return when {
         playerShape beats opponentShape -> Outcome.WIN
@@ -46,15 +70,17 @@ enum class Outcome(val points: Int) {
 }
 
 enum class Shape(val points: Int) {
-    ROCK(1) {
-        override infix fun beats(otherShape : Shape) = otherShape == SCISSORS
-    },
-    PAPER(2) {
-        override infix fun beats(otherShape : Shape) = otherShape == ROCK
-    },
-    SCISSORS(3) {
-        override infix fun beats(otherShape : Shape) = otherShape == PAPER
-    };
+    ROCK(1),
+    PAPER(2),
+    SCISSORS(3);
 
-    abstract infix fun beats(otherShape: Shape) : Boolean
+    infix fun beats(otherShape: Shape) : Boolean {
+        val beatenByThis = when(this) {
+            ROCK -> SCISSORS
+            PAPER -> ROCK
+            SCISSORS -> PAPER
+        }
+
+        return beatenByThis == otherShape
+    }
 }
